@@ -19,7 +19,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers attribute="class" defaultTheme="dark">
-          <div className="bg-background text-foreground flex h-screen flex-col items-center">
+          <div className="bg-background text-foreground">
             {children}
           </div>
         </Providers>

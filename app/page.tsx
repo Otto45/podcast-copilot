@@ -1,10 +1,13 @@
+"use client" // TODO: Remove this line when we create the landing page
+
 import { Metadata } from 'next'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
  
-export const metadata: Metadata = {
-  title: 'Podcast Co-Pilot',
-}
+// TODO: Comment this in when we create the landing page
+// export const metadata: Metadata = {
+//   title: 'Podcast Co-Pilot',
+// }
 
 export default function Home() {
   const router = useRouter()

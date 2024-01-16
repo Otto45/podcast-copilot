@@ -1,14 +1,21 @@
+import { CopilotResearch } from '@/components/copilot/copilot-research';
+import { CopilotSuggestions } from '@/components/copilot/copilot-suggestions';
 import React from 'react';
 
 interface CopilotProps {
     
 }
 
-export const Copilot: React.FC<CopilotProps> = () => {
+export default function Copilot() {
 
     return (
-        <div>
-            {/* Add your component content here */}
-        </div>
+        <main className="flex min-h-screen flex-row items-center justify-evenly p-24">
+            <div>
+                <CopilotSuggestions />
+            </div>
+            <div>
+                <CopilotResearch />
+            </div>
+        </main>
     );
 };
