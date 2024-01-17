@@ -1,3 +1,5 @@
+"use client"
+
 import { CopilotResearch } from '@/components/copilot/copilot-research';
 import { CopilotSuggestions } from '@/components/copilot/copilot-suggestions';
 import React from 'react';
