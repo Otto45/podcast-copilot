@@ -8,10 +8,13 @@ interface GlobalStateProps {
 }
 
 export const GlobalState: React.FC<GlobalStateProps> = ({ children }) => {
+    const [isRecording, setIsRecording] = React.useState<boolean>(false)
+
     return (
         <CopilotContext.Provider
             value={{
-
+                isRecording,
+                setIsRecording
             }}
         >
             {children}
