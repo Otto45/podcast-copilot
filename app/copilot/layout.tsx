@@ -1,7 +1,6 @@
 "use client"
 
 import { GlobalState } from "@/components/utilities/global-state"
-import { Providers } from "@/components/utilities/providers"
 import { Inter } from "next/font/google"
 import { ReactNode } from "react"
 
