@@ -27,7 +27,11 @@ export const CopilotSuggestions: FC<CopilotSuggestionsProps> = () => {
             });
 
             const { suggestions } = await response.json();
-            suggestionsRef.current.push(suggestions);
+            
+            if (suggestions.length > 0)
+            {
+                suggestionsRef.current.push(suggestions);
+            }
         };
 
         if (transcript.length > 0 &&

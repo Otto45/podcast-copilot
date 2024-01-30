@@ -7,6 +7,8 @@ import { CopilotContext } from '@/context/context';
 import { RealtimeService, FinalTranscript } from 'assemblyai';
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
 import { loremIpsum } from '@/lib/lorem-ipsum';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
 
 interface CopilotUiProps {
 
@@ -99,12 +101,18 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
                         </button>
                     </div>
                     <div className="flex h-full w-full flex-row items-center justify-evenly">
-                        <div className="overflow-auto overscroll-auto h-full w-1/3">
-                            <CopilotSuggestions />
-                        </div>
-                        <div className="overflow-auto overscroll-auto h-full w-1/3">
-                            <CopilotResearch />
-                        </div>
+                        <ScrollArea className="h-full w-2/3 rounded-md border">
+                            <div className="p-4">
+                                <h4 className="mb-4 text-sm font-medium leading-none">Suggested Questions</h4>
+                                <CopilotSuggestions />
+                            </div>
+                        </ScrollArea>
+                        <ScrollArea className="h-full w-2/3 rounded-md border">
+                            <div className="p-4">
+                                <h4 className="mb-4 text-sm font-medium leading-none">Copilot Research</h4>
+                                <CopilotResearch />
+                            </div>
+                        </ScrollArea>
                     </div>
                 </>
             ) : (
