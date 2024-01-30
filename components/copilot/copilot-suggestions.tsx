@@ -3,6 +3,7 @@
 import React, { FC, useContext, useEffect, useRef } from 'react';
 import { CopilotContext } from '@/context/context';
 import { MessageMarkdown } from '../message/message-markdown';
+import { CopilotSuggestedQuestions } from '@/types/types';
 
 const getSuggestionsInterval = 60000;
 
@@ -14,7 +15,7 @@ export const CopilotSuggestions: FC<CopilotSuggestionsProps> = () => {
 
     const { transcript } = useContext(CopilotContext);
     const suggestionsRef = useRef<Array<string>>([]);
-    const lastSuggestionTimestampRef = useRef<number | null>(null);
+    const lastSuggestionTimestampRef = useRef<number>(Date.now());
 
     useEffect(() => {
         const getSuggestions = async () => {
@@ -26,16 +27,15 @@ export const CopilotSuggestions: FC<CopilotSuggestionsProps> = () => {
                 body: JSON.stringify({ transcript })
             });
 
-            const { suggestions } = await response.json();
-            
-            if (suggestions.length > 0)
-            {
-                suggestionsRef.current.push(suggestions);
+            const copilotSuggestedQuestions: CopilotSuggestedQuestions = await response.json();
+
+            if (copilotSuggestedQuestions.questions.length > 0) {
+                suggestionsRef.current.push(...copilotSuggestedQuestions.questions);
             }
         };
 
         if (transcript.length > 0 &&
-            (lastSuggestionTimestampRef.current === null || Date.now() - lastSuggestionTimestampRef.current > getSuggestionsInterval)) {
+            (Date.now() - lastSuggestionTimestampRef.current > getSuggestionsInterval)) {
 
             getSuggestions();
             lastSuggestionTimestampRef.current = Date.now();
@@ -45,7 +45,11 @@ export const CopilotSuggestions: FC<CopilotSuggestionsProps> = () => {
     return (
         suggestionsRef.current.map((suggestion, index) => {
             return (
-                <MessageMarkdown key={index} content={suggestion} />
+                <div key={index} className={index % 2 === 0 ? "bg-slate-800" : "bg-slate-700"}>
+                    <div className="p-10">
+                        <MessageMarkdown content={suggestion} />
+                    </div>
+                </div>
             );
         })
     );

@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { CopilotContext } from '@/context/context';
 import { MessageMarkdown } from '../message/message-markdown';
 
-const getSuggestionsInterval = 60000;
+const getSuggestionsInterval = 30000;
 
 interface CopilotResearchProps {
     
@@ -14,7 +14,7 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
 
     const { transcript } = useContext(CopilotContext);
     const researchRef = useRef<Array<string>>([]);
-    const lastResearchTimestampRef = useRef<number | null>(null);
+    const lastResearchTimestampRef = useRef<number>(Date.now());
 
     useEffect(() => {
         const doResearch = async () => {
@@ -35,7 +35,7 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
         };
 
         if (transcript.length > 0 &&
-            (lastResearchTimestampRef.current === null || Date.now() - lastResearchTimestampRef.current > getSuggestionsInterval)) {
+            (Date.now() - lastResearchTimestampRef.current > getSuggestionsInterval)) {
 
                 doResearch();
                 lastResearchTimestampRef.current = Date.now();
@@ -45,7 +45,11 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
     return (
         researchRef.current.map((research, index) => {
             return (
-                <MessageMarkdown key={index} content={research} />
+                <div key={index} className={index % 2 === 0 ? "bg-slate-800" : "bg-slate-700"}>
+                    <div className="p-10">
+                        <MessageMarkdown content={research} />
+                    </div>
+                </div>
             );
         })
     );

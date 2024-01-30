@@ -4,11 +4,10 @@ import React, { FC, useContext, useEffect, useRef } from 'react';
 import { CopilotResearch } from '@/components/copilot/copilot-research';
 import { CopilotSuggestions } from '@/components/copilot/copilot-suggestions';
 import { CopilotContext } from '@/context/context';
-import { RealtimeService, FinalTranscript } from 'assemblyai';
+import { FinalTranscript, RealtimeTranscriber } from 'assemblyai';
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
-import { loremIpsum } from '@/lib/lorem-ipsum';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { ScrollArea } from '@radix-ui/react-scroll-area';
+import { ScrollableCardContent } from '../ui/scrollable-card-content';
 
 interface CopilotUiProps {
 
@@ -23,7 +22,7 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
         setTranscript
     } = useContext(CopilotContext);
 
-    const rtTranscriberRef = useRef<RealtimeService>();
+    const rtTranscriberRef = useRef<RealtimeTranscriber>();
     const recordRtcRef = useRef<RecordRTC>();
     const transcriptRef = useRef<string>('');
 
@@ -35,7 +34,7 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
                 const assemblyAiTokenResponse = await fetch('/api/transcription-auth-token');
                 const assemblyAiTokenJson = await assemblyAiTokenResponse.json();
                 const assemblyAiToken = assemblyAiTokenJson.token;
-                const rt = new RealtimeService({ token: assemblyAiToken });
+                const rt = new RealtimeTranscriber({ token: assemblyAiToken });
 
                 rt.on("open", ({ sessionId, expiresAt }) => console.log('Session ID:', sessionId, 'Expires at:', expiresAt));
                 rt.on("close", (code: number, reason: string) => console.log('Closed', code, reason));
@@ -100,19 +99,27 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
                             Stop Listening
                         </button>
                     </div>
-                    <div className="flex h-full w-full flex-row items-center justify-evenly">
-                        <ScrollArea className="h-full w-2/3 rounded-md border">
-                            <div className="p-4">
-                                <h4 className="mb-4 text-sm font-medium leading-none">Suggested Questions</h4>
-                                <CopilotSuggestions />
-                            </div>
-                        </ScrollArea>
-                        <ScrollArea className="h-full w-2/3 rounded-md border">
-                            <div className="p-4">
-                                <h4 className="mb-4 text-sm font-medium leading-none">Copilot Research</h4>
-                                <CopilotResearch />
-                            </div>
-                        </ScrollArea>
+                    <div className="flex h-5/6 w-full flex-row items-center justify-evenly">
+                        <div className="flex h-full w-5/12 flex-col">
+                            <Card className="flex flex-col h-full w-full overflow-hidden bg-slate-800">
+                                <CardHeader className="bg-slate-900">
+                                    <CardTitle>Suggested Questions</CardTitle>
+                                </CardHeader>
+                                <ScrollableCardContent className="flex-1 w-full p-0">
+                                    <CopilotSuggestions />
+                                </ScrollableCardContent>
+                            </Card>
+                        </div>
+                        <div className="flex h-full w-5/12 flex-col">
+                            <Card className="flex flex-col h-full w-full overflow-hidden bg-slate-800">
+                                <CardHeader className="bg-slate-900">
+                                    <CardTitle>Copilot Research</CardTitle>
+                                </CardHeader>
+                                <ScrollableCardContent className="flex-1 w-full p-0">
+                                    <CopilotResearch />
+                                </ScrollableCardContent>
+                            </Card>
+                        </div>
                     </div>
                 </>
             ) : (

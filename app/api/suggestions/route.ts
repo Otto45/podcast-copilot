@@ -1,3 +1,4 @@
+import { CopilotSuggestedQuestions } from '@/types/types';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -7,10 +8,22 @@ const openai = new OpenAI({
 export const runtime = 'edge';
 
 const copilotSuggestionsPrompt: string = `You are a helpful assistant for podcast hosts.
-Given a transcript for what the host and guest have recently discussed, suggest questions to ask the guest. Please only suggest 1 - 3 questions,
-following this format:
+Given a transcript for what the host and guest have recently discussed, suggest questions to ask the guest.
+Please only suggest 1 question that is most relevant to the conversation.
+Respond using JSON in the following format:
 
-"Q: <question>\n\n"`;
+{
+  "questions": [
+    "<question>"
+  ]
+}
+
+If you are unable to come up with a question for the given transcript, please respond with an empty array:
+    
+{
+"questions": []
+}
+`;
 
 export async function POST(req: Request) {
   const { transcript } = await req.json();
@@ -27,10 +40,7 @@ export async function POST(req: Request) {
   });
 
   const suggestions = response.choices[0].message.content;
+  const suggestionsJSON: CopilotSuggestedQuestions = JSON.parse(suggestions!);
 
-  if (suggestions === null || suggestions === "") {
-    return Response.json({ suggestions: "" });
-  }
-
-  return Response.json({ suggestions });
+  return Response.json(suggestionsJSON);
 }

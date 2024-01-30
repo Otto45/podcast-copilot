@@ -1,8 +1,5 @@
+import { CopilotResearchQuestions } from '@/types/types';
 import OpenAI from 'openai';
-
-interface CopilotQuestions {
-    questions: Array<string>;
-}
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -34,7 +31,8 @@ If you are unable to come up with a question which has factual answers, please r
 }
 `;
 
-const generateAnswersPrompt: string = `You are a helpful assistant. Please answer the question(s) provided by the user.`;
+const generateAnswersPrompt: string = `You are a helpful assistant.
+Please answer the question(s) provided by the user. Include links to the sources you used to find the answer(s).`;
 
 export async function POST(req: Request) {
     const { transcript } = await req.json();
@@ -51,7 +49,7 @@ export async function POST(req: Request) {
     });
 
     const questions = generateQuestionsResponse.choices[0].message.content;
-    const questionsJSON: CopilotQuestions = JSON.parse(questions!);
+    const questionsJSON: CopilotResearchQuestions = JSON.parse(questions!);
 
     if (questionsJSON.questions.length === 0) {
         return Response.json({ research: "" });
@@ -68,7 +66,9 @@ export async function POST(req: Request) {
     });
 
     let research = getAnswersResponse.choices[0].message.content;
-    research = questionsJSON.questions[0] + "\n\n" + research;
+
+    // Use markdown for formatting
+    research = `### ${questionsJSON.questions[0]}\n\n${research}`;
 
     return Response.json({ research });
 }
