@@ -6,7 +6,7 @@ import { CopilotSuggestions } from '@/components/copilot/copilot-suggestions';
 import { CopilotContext } from '@/context/context';
 import { FinalTranscript, RealtimeTranscriber } from 'assemblyai';
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardHeader, CardTitle } from '../ui/card';
 import { ScrollableCardContent } from '../ui/scrollable-card-content';
 
 interface CopilotUiProps {
@@ -18,7 +18,6 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
     const {
         isRecording,
         setIsRecording,
-        transcript,
         setTranscript
     } = useContext(CopilotContext);
 
@@ -29,16 +28,14 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
     useEffect(() => {
         const initCopilot = async () => {
             try {
-                setTranscript(transcriptRef.current);
-
                 const assemblyAiTokenResponse = await fetch('/api/transcription-auth-token');
                 const assemblyAiTokenJson = await assemblyAiTokenResponse.json();
                 const assemblyAiToken = assemblyAiTokenJson.token;
                 const rt = new RealtimeTranscriber({ token: assemblyAiToken });
 
-                rt.on("open", ({ sessionId, expiresAt }) => console.log('Session ID:', sessionId, 'Expires at:', expiresAt));
-                rt.on("close", (code: number, reason: string) => console.log('Closed', code, reason));
-                rt.on("error", (error: Error) => console.error('Error', error));
+                rt.on("open", ({ sessionId, expiresAt }) => console.log('Live transcription session id:', sessionId, 'Expires at:', expiresAt));
+                rt.on("close", (code: number, reason: string) => console.log('Live transcription session closed:', code, reason));
+                rt.on("error", (error: Error) => console.error('Live transcription error:', error));
 
                 rt.on("transcript.final", (finalTranscript: FinalTranscript) => {
                     transcriptRef.current += finalTranscript.text;

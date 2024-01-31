@@ -1,20 +1,15 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
+"use client"
 
-export const metadata: Metadata = {
-  title: 'Podcast Co-Pilot',
-}
+import dynamic from "next/dynamic"
 
-export default function Home() {
+// We have to use dynamic imports here because the copilot-ui component uses the recordRTC library, which is not compatible with SSR.
+const CopilotUi = dynamic(() => import('@/components/copilot/copilot-ui').then(module => module.CopilotUi), { ssr: false });
 
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <p className="text-4xl font-bold">Podcast Co-Pilot</p>
-      <Link href="/copilot">
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Launch App
-        </button>
-      </Link>
-    </main>
-  )
-}
+export default function Copilot() {
+
+    return (
+        <main className="flex h-screen w-screen flex-col items-center p-24">
+            <CopilotUi />
+        </main>
+    );
+};
