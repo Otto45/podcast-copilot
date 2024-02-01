@@ -23,7 +23,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
       try {
         const supabase = createClient();
         const session = (await supabase.auth.getSession()).data.session;
-        console.log(session);
 
         if (!session) {
           router.push('/login');
@@ -40,7 +39,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers attribute="class" defaultTheme="dark">
-          <div className="bg-background text-foreground">
+          <div className="bg-background text-foreground flex h-screen w-screen flex-col items-center p-24">
             <GlobalState>
               {children}
             </GlobalState>
