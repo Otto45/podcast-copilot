@@ -5,15 +5,12 @@ import { createClient } from '@/utils/supabase/client';
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 
-// TODO: Just convert this to use its own form and code,
-// the redirectTo feature isn't working locally
-
 // TODO: Create custom theme to match the rest of the app
 // https://supabase.com/docs/guides/auth/auth-helpers/auth-ui#create-theme
 export default function LoginPage() {
   const supabase = createClient();
 
-  const redirectTo = `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  // TODO: For email auth, we need to redirect to home after logging in
 
   return (
     <Auth
@@ -22,7 +19,6 @@ export default function LoginPage() {
       socialLayout="horizontal"
       theme="dark"
       providers={[]}
-      redirectTo={redirectTo}
     />
   );
 };
