@@ -1,4 +1,3 @@
-import { RealtimeService } from 'assemblyai';
 import { Dispatch, SetStateAction, createContext } from 'react';
 
 interface CopilotContext {

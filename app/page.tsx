@@ -8,7 +8,7 @@ const CopilotUi = dynamic(() => import('@/components/copilot/copilot-ui').then(m
 export default function Copilot() {
 
     return (
-        <main>
+        <main className="flex flex-col h-full w-full">
             <CopilotUi />
         </main>
     );
