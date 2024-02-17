@@ -6,9 +6,6 @@ interface CopilotContext {
 
     transcript: string,
     setTranscript: Dispatch<SetStateAction<string>>
-
-    sidebarIsOpen: boolean,
-    setSidebarIsOpen: Dispatch<SetStateAction<boolean>>
 }
 
 export const CopilotContext = createContext<CopilotContext>({
@@ -16,8 +13,5 @@ export const CopilotContext = createContext<CopilotContext>({
     setIsRecording: () => { },
 
     transcript: '',
-    setTranscript: () => { },
-
-    sidebarIsOpen: false,
-    setSidebarIsOpen: () => { }
+    setTranscript: () => { }
 })

@@ -10,7 +10,6 @@ interface GlobalStateProps {
 export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [transcript, setTranscript] = useState<string>('');
-    const [sidebarIsOpen, setSidebarIsOpen] = useState<boolean>(false);
 
     return (
         <CopilotContext.Provider
@@ -19,10 +18,7 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
                 setIsRecording,
                 
                 transcript,
-                setTranscript,
-
-                sidebarIsOpen,
-                setSidebarIsOpen
+                setTranscript
             }}
         >
             {children}
