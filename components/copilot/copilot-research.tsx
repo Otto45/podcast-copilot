@@ -10,8 +10,11 @@ interface CopilotResearchProps {
 
 export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
 
-    const { userSearchQuestion } = useContext(CopilotContext);
-    const [ researchList, setResearchList ] = useState<Array<string>>([]);
+    const { 
+        userSearchQuestion,
+        userSearchAnswers,
+        setUserSearchAnswers
+     } = useContext(CopilotContext);
 
     useEffect(() => {
         const doResearch = async () => {
@@ -28,7 +31,7 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
 
             if (researchTyped)
             {
-                setResearchList([...researchList, researchTyped]);
+                setUserSearchAnswers([...userSearchAnswers, researchTyped]);
             }
         };
 
@@ -39,11 +42,11 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
     }, [userSearchQuestion]);
 
     return (
-        researchList.map((researchItem, index) => {
+        userSearchAnswers.map((userSearchAnswer, index) => {
             return (
                 <div key={index} className={index % 2 === 0 ? "bg-slate-800" : "bg-slate-700"}>
                     <div className="p-10">
-                        <MessageMarkdown content={researchItem} />
+                        <MessageMarkdown content={userSearchAnswer} />
                     </div>
                 </div>
             );

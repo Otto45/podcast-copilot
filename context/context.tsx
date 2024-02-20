@@ -8,7 +8,10 @@ interface CopilotContext {
     setTranscript: Dispatch<SetStateAction<string>>,
 
     userSearchQuestion: string | null,
-    setUserSearchQuestion: Dispatch<SetStateAction<string | null>>
+    setUserSearchQuestion: Dispatch<SetStateAction<string | null>>,
+
+    userSearchAnswers: Array<string>,
+    setUserSearchAnswers: Dispatch<SetStateAction<Array<string>>>
 }
 
 export const CopilotContext = createContext<CopilotContext>({
@@ -19,5 +22,8 @@ export const CopilotContext = createContext<CopilotContext>({
     setTranscript: () => { },
 
     userSearchQuestion: null,
-    setUserSearchQuestion: () => { }
+    setUserSearchQuestion: () => { },
+
+    userSearchAnswers: new Array<string>(),
+    setUserSearchAnswers: () => { }
 })

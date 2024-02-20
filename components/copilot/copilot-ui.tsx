@@ -21,7 +21,8 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
         isRecording,
         setIsRecording,
         setTranscript,
-        setUserSearchQuestion
+        setUserSearchQuestion,
+        setUserSearchAnswers
     } = useContext(CopilotContext);
 
     const assemblyAiToken = useRef<string | null>(null);
@@ -103,6 +104,10 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
 
     const startRecording = async () => {
         transcriptRef.current = '';
+        setTranscript('');
+        setUserSearchQuestion(null);
+        setUserSearchAnswers(new Array<string>());
+
         createRealtimeTranscriber();
         
         if (!recorderRef.current) {
