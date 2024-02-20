@@ -1,6 +1,7 @@
 "use client"
 
 import { CopilotContext } from '@/context/context';
+import { CopilotChatItem } from '@/types/types';
 import React, { FC, useState } from 'react';
 
 interface GlobalStateProps {
@@ -10,8 +11,8 @@ interface GlobalStateProps {
 export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [transcript, setTranscript] = useState<string>('');
-    const [userSearchQuestion, setUserSearchQuestion] = useState<string | null>(null);
-    const [userSearchAnswers, setUserSearchAnswers] = useState<Array<string>>([]);
+    const [currentUserQuestion, setCurrentUserQuestion] = useState<string | null>(null);
+    const [copilotChatItems, setCopilotChatItems] = useState<Array<CopilotChatItem>>(new Array<CopilotChatItem>());
 
     return (
         <CopilotContext.Provider
@@ -22,11 +23,11 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
                 transcript,
                 setTranscript,
 
-                userSearchQuestion,
-                setUserSearchQuestion,
+                currentUserQuestion,
+                setCurrentUserQuestion,
 
-                userSearchAnswers,
-                setUserSearchAnswers
+                copilotChatItems,
+                setCopilotChatItems
             }}
         >
             {children}

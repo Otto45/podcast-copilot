@@ -12,10 +12,10 @@ const generateAnswersPrompt: string = `You are a helpful assistant.
 Please answer the question(s) provided by the user below.`;
 
 export async function POST(req: Request) {
-    const { userSearchQuestion } = await req.json();
+    const { currentUserQuestion } = await req.json();
 
     // Perplexity's online models ignore the system messages, so concat our prompt with the user message
-    const userMessage = `${generateAnswersPrompt}\n\n${userSearchQuestion}`;
+    const userMessage = `${generateAnswersPrompt}\n\n${currentUserQuestion}`;
 
     const getAnswersMessage: any = [
         { "role": "user", "content": userMessage }

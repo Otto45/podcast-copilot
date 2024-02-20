@@ -2,15 +2,17 @@ import React, { FC } from "react"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 import { MessageMarkdownMemoized } from "./message-markdown-memoized"
+import { cn } from "@/utils/utils"
 
 interface MessageMarkdownProps {
-  content: string
+  content: string,
+  copilotChatRole: 'user' | 'copilot'
 }
 
-export const MessageMarkdown: FC<MessageMarkdownProps> = ({ content }) => {
+export const MessageMarkdown: FC<MessageMarkdownProps> = ({ content, copilotChatRole }) => {
   return (
     <MessageMarkdownMemoized
-      className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-full"
+      className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-full", copilotChatRole === 'user' ? "text-right" : "")}
       remarkPlugins={[remarkGfm, remarkMath]}
       components={{
         p({ children }) {

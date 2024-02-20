@@ -8,6 +8,7 @@ import { FinalTranscript, PartialTranscript, RealtimeTranscriber } from 'assembl
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
 import { Card, CardHeader, CardTitle } from '../ui/card';
 import { ScrollableCardContent } from '../ui/scrollable-card-content';
+import { CopilotChatItem } from '@/types/types';
 
 const TIME_SLICE = 450; // ms
 
@@ -21,8 +22,8 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
         isRecording,
         setIsRecording,
         setTranscript,
-        setUserSearchQuestion,
-        setUserSearchAnswers
+        setCurrentUserQuestion,
+        setCopilotChatItems
     } = useContext(CopilotContext);
 
     const assemblyAiToken = useRef<string | null>(null);
@@ -88,8 +89,11 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
             }
             
             if ((silenceCountRef.current * TIME_SLICE >= 1000) && copilotPrompt.current !== null) {
-                const userSearchQuestion = copilotPrompt.current?.replace('hey copilot', '').trim();
-                setUserSearchQuestion(userSearchQuestion);
+                let userSearchQuestion = copilotPrompt.current?.replace('hey copilot', '').trim();
+                userSearchQuestion = userSearchQuestion.charAt(0).toUpperCase() + userSearchQuestion.slice(1);
+                userSearchQuestion = userSearchQuestion.endsWith('?') ? userSearchQuestion : `${userSearchQuestion}?`;
+
+                setCurrentUserQuestion(userSearchQuestion);
                 copilotPrompt.current = null;
             }
         });
@@ -105,8 +109,8 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
     const startRecording = async () => {
         transcriptRef.current = '';
         setTranscript('');
-        setUserSearchQuestion(null);
-        setUserSearchAnswers(new Array<string>());
+        setCurrentUserQuestion(null);
+        setCopilotChatItems(new Array<CopilotChatItem>());
 
         createRealtimeTranscriber();
         
@@ -156,7 +160,7 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
                         <div className="flex h-full w-5/12 flex-col">
                             <Card className="flex flex-col h-full w-full overflow-hidden bg-slate-800">
                                 <CardHeader className="bg-slate-900">
-                                    <CardTitle>Copilot Research</CardTitle>
+                                    <CardTitle>Copilot Chat</CardTitle>
                                 </CardHeader>
                                 <ScrollableCardContent className="flex-1 w-full p-0">
                                     <CopilotResearch />

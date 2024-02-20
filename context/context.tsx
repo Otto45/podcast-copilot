@@ -1,3 +1,4 @@
+import { CopilotChatItem } from '@/types/types';
 import { Dispatch, SetStateAction, createContext } from 'react';
 
 interface CopilotContext {
@@ -7,11 +8,13 @@ interface CopilotContext {
     transcript: string,
     setTranscript: Dispatch<SetStateAction<string>>,
 
-    userSearchQuestion: string | null,
-    setUserSearchQuestion: Dispatch<SetStateAction<string | null>>,
+    currentUserQuestion: string | null,
+    setCurrentUserQuestion: Dispatch<SetStateAction<string | null>>,
 
-    userSearchAnswers: Array<string>,
-    setUserSearchAnswers: Dispatch<SetStateAction<Array<string>>>
+    copilotChatItems: Array<CopilotChatItem>,
+    setCopilotChatItems: Dispatch<SetStateAction<Array<CopilotChatItem>>>,
+
+    
 }
 
 export const CopilotContext = createContext<CopilotContext>({
@@ -21,9 +24,9 @@ export const CopilotContext = createContext<CopilotContext>({
     transcript: '',
     setTranscript: () => { },
 
-    userSearchQuestion: null,
-    setUserSearchQuestion: () => { },
+    currentUserQuestion: null,
+    setCurrentUserQuestion: () => { },
 
-    userSearchAnswers: new Array<string>(),
-    setUserSearchAnswers: () => { }
+    copilotChatItems: new Array<CopilotChatItem>(),
+    setCopilotChatItems: () => { }
 })
