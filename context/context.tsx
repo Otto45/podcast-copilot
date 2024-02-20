@@ -5,7 +5,10 @@ interface CopilotContext {
     setIsRecording: Dispatch<SetStateAction<boolean>>,
 
     transcript: string,
-    setTranscript: Dispatch<SetStateAction<string>>
+    setTranscript: Dispatch<SetStateAction<string>>,
+
+    userSearchQuestion: string | null,
+    setUserSearchQuestion: Dispatch<SetStateAction<string | null>>
 }
 
 export const CopilotContext = createContext<CopilotContext>({
@@ -13,5 +16,8 @@ export const CopilotContext = createContext<CopilotContext>({
     setIsRecording: () => { },
 
     transcript: '',
-    setTranscript: () => { }
+    setTranscript: () => { },
+
+    userSearchQuestion: null,
+    setUserSearchQuestion: () => { }
 })

@@ -10,6 +10,7 @@ interface GlobalStateProps {
 export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [transcript, setTranscript] = useState<string>('');
+    const [userSearchQuestion, setUserSearchQuestion] = useState<string | null>(null);
 
     return (
         <CopilotContext.Provider
@@ -18,7 +19,10 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
                 setIsRecording,
                 
                 transcript,
-                setTranscript
+                setTranscript,
+
+                userSearchQuestion,
+                setUserSearchQuestion
             }}
         >
             {children}

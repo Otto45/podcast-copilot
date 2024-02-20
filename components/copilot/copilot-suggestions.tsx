@@ -5,7 +5,7 @@ import { CopilotContext } from '@/context/context';
 import { MessageMarkdown } from '../message/message-markdown';
 import { CopilotSuggestedQuestions } from '@/types/types';
 
-const getSuggestionsInterval = 60000;
+const generateQuestionSuggestionsInterval = 30000;
 
 interface CopilotSuggestionsProps {
 
@@ -13,7 +13,7 @@ interface CopilotSuggestionsProps {
 
 export const CopilotSuggestions: FC<CopilotSuggestionsProps> = () => {
 
-    const { transcript } = useContext(CopilotContext);
+    const { transcript, setTranscript } = useContext(CopilotContext);
     const suggestionsRef = useRef<Array<string>>([]);
     const lastSuggestionTimestampRef = useRef<number>(Date.now());
 
@@ -35,10 +35,11 @@ export const CopilotSuggestions: FC<CopilotSuggestionsProps> = () => {
         };
 
         if (transcript.length > 0 &&
-            (Date.now() - lastSuggestionTimestampRef.current > getSuggestionsInterval)) {
+            (Date.now() - lastSuggestionTimestampRef.current > generateQuestionSuggestionsInterval)) {
 
             getSuggestions();
             lastSuggestionTimestampRef.current = Date.now();
+            setTranscript('');
         }
     }, [transcript]);
 

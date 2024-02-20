@@ -4,10 +4,12 @@ import React, { FC, useContext, useEffect, useRef } from 'react';
 import { CopilotResearch } from '@/components/copilot/copilot-research';
 import { CopilotSuggestions } from '@/components/copilot/copilot-suggestions';
 import { CopilotContext } from '@/context/context';
-import { FinalTranscript, RealtimeTranscriber } from 'assemblyai';
+import { FinalTranscript, PartialTranscript, RealtimeTranscriber } from 'assemblyai';
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
 import { Card, CardHeader, CardTitle } from '../ui/card';
 import { ScrollableCardContent } from '../ui/scrollable-card-content';
+
+const TIME_SLICE = 450; // ms
 
 interface CopilotUiProps {
 
@@ -18,49 +20,25 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
     const {
         isRecording,
         setIsRecording,
-        setTranscript
+        setTranscript,
+        setUserSearchQuestion
     } = useContext(CopilotContext);
 
-    const rtTranscriberRef = useRef<RealtimeTranscriber>();
-    const recordRtcRef = useRef<RecordRTC>();
+    const assemblyAiToken = useRef<string | null>(null);
+    const rtTranscriberRef = useRef<RealtimeTranscriber | null>(null);
+    const recorderRef = useRef<RecordRTC | null>(null);
     const transcriptRef = useRef<string>('');
+    const copilotPrompt = useRef<string | null>(null);
+    const silenceCountRef = useRef<number>(0);
 
     useEffect(() => {
         const initCopilot = async () => {
             try {
-                const assemblyAiTokenResponse = await fetch('/api/transcription-auth-token');
-                const assemblyAiTokenJson = await assemblyAiTokenResponse.json();
-                const assemblyAiToken = assemblyAiTokenJson.token;
-                const rt = new RealtimeTranscriber({ token: assemblyAiToken });
-
-                rt.on("open", ({ sessionId, expiresAt }) => console.log('Live transcription session id:', sessionId, 'Expires at:', expiresAt));
-                rt.on("close", (code: number, reason: string) => console.log('Live transcription session closed:', code, reason));
-                rt.on("error", (error: Error) => console.error('Live transcription error:', error));
-
-                rt.on("transcript.final", (finalTranscript: FinalTranscript) => {
-                    transcriptRef.current += finalTranscript.text;
-                    setTranscript(transcriptRef.current);
-                });
-
-                rtTranscriberRef.current = rt;
-
-                const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-                recordRtcRef.current = new RecordRTC(audioStream, {
-                    type: "audio",
-                    mimeType: "audio/webm;codecs=pcm", // endpoint requires 16bit PCM audio
-                    recorderType: StereoAudioRecorder,
-                    timeSlice: 250, // AssemblyAI recommends sending between 100ms and 450ms of audio at a time.
-                    desiredSampRate: 16000,
-                    numberOfAudioChannels: 1, // realtime requires only one channel
-                    bufferSize: 16384,
-                    audioBitsPerSecond: 128000,
-                    ondataavailable: async (blob: Blob) => {
-                        rtTranscriberRef.current!.sendAudio(await blob.arrayBuffer());
-                    },
-                    disableLogs: true
-                });
-
+                if (assemblyAiToken.current === null) {
+                    const assemblyAiTokenResponse = await fetch('/api/transcription-auth-token');
+                    const assemblyAiTokenJson = await assemblyAiTokenResponse.json();
+                    assemblyAiToken.current = assemblyAiTokenJson.token;
+                }
             } catch (error) {
                 // Handle error here
                 console.error(error);
@@ -70,16 +48,79 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
         initCopilot();
     }, []);
 
-    const startRecording = () => {
+    const createRecorder = async () => {
+        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        recorderRef.current = new RecordRTC(audioStream, {
+            type: "audio",
+            mimeType: "audio/webm;codecs=pcm", // endpoint requires 16bit PCM audio
+            recorderType: StereoAudioRecorder,
+            timeSlice: TIME_SLICE, // AssemblyAI recommends sending between 100ms and 450ms of audio at a time.
+            desiredSampRate: 16000,
+            numberOfAudioChannels: 1, // realtime requires only one channel
+            bufferSize: 16384,
+            audioBitsPerSecond: 128000,
+            ondataavailable: async (blob: Blob) => {
+                rtTranscriberRef.current?.sendAudio(await blob.arrayBuffer());
+            },
+            disableLogs: true
+        });
+    };
+
+    const createRealtimeTranscriber = () => {
+        const rt = new RealtimeTranscriber({ token: assemblyAiToken.current! });
+
+        rt.on("open", ({ sessionId, expiresAt }) => console.log('Live transcription session id:', sessionId, 'Expires at:', expiresAt));
+        rt.on("close", (code: number, reason: string) => console.log('Live transcription session closed:', code, reason));
+        rt.on("error", (error: Error) => console.error('Live transcription error:', error));
+        
+        
+        rt.on("transcript.partial", (partialTranscript: PartialTranscript) => {
+            if (partialTranscript.text.toLowerCase().includes('hey copilot')) {
+                copilotPrompt.current = partialTranscript.text;
+            }
+
+            if (partialTranscript.text.length === 0) {
+                silenceCountRef.current++;
+            } else {
+                silenceCountRef.current = 0;
+            }
+            
+            if ((silenceCountRef.current * TIME_SLICE >= 1000) && copilotPrompt.current !== null) {
+                const userSearchQuestion = copilotPrompt.current?.replace('hey copilot', '').trim();
+                setUserSearchQuestion(userSearchQuestion);
+                copilotPrompt.current = null;
+            }
+        });
+        
+        rt.on("transcript.final", (finalTranscript: FinalTranscript) => {
+            transcriptRef.current += ` ${finalTranscript.text}`;
+            setTranscript(transcriptRef.current);
+        });
+
+        rtTranscriberRef.current = rt;
+    };
+
+    const startRecording = async () => {
+        transcriptRef.current = '';
+        createRealtimeTranscriber();
+        
+        if (!recorderRef.current) {
+            await createRecorder();
+            recorderRef.current!.startRecording();
+        } else {
+            recorderRef.current!.resumeRecording();
+        }
+        
         rtTranscriberRef.current!.connect();
-        recordRtcRef.current!.startRecording();
 
         setIsRecording(true);
     };
 
     const stopRecording = () => {
-        recordRtcRef.current!.stopRecording();
+        recorderRef.current!.pauseRecording();
         rtTranscriberRef.current!.close();
+        rtTranscriberRef.current = null;
 
         setIsRecording(false);
     };
@@ -123,7 +164,7 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
                 <div className="flex h-full items-center justify-center">
                     <button
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={() => startRecording()}
+                        onClick={async () => await startRecording()}
                     >
                         Start Listening
                     </button>

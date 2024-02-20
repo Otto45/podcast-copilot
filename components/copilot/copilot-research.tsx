@@ -1,10 +1,8 @@
 "use client"
 
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { CopilotContext } from '@/context/context';
 import { MessageMarkdown } from '../message/message-markdown';
-
-const getSuggestionsInterval = 30000;
 
 interface CopilotResearchProps {
     
@@ -12,9 +10,8 @@ interface CopilotResearchProps {
 
 export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
 
-    const { transcript } = useContext(CopilotContext);
-    const researchRef = useRef<Array<string>>([]);
-    const lastResearchTimestampRef = useRef<number>(Date.now());
+    const { userSearchQuestion } = useContext(CopilotContext);
+    const [ researchList, setResearchList ] = useState<Array<string>>([]);
 
     useEffect(() => {
         const doResearch = async () => {
@@ -23,31 +20,30 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ transcript })
+                body: JSON.stringify({ userSearchQuestion })
             });
 
             const { research } = await response.json();
+            const researchTyped = research as string | null;
 
-            if (research.length > 0)
+            if (researchTyped)
             {
-                researchRef.current.push(research);
+                setResearchList([...researchList, researchTyped]);
             }
         };
 
-        if (transcript.length > 0 &&
-            (Date.now() - lastResearchTimestampRef.current > getSuggestionsInterval)) {
-
-                doResearch();
-                lastResearchTimestampRef.current = Date.now();
+        if (userSearchQuestion) {
+            doResearch();
         }
-    }, [transcript]);
+
+    }, [userSearchQuestion]);
 
     return (
-        researchRef.current.map((research, index) => {
+        researchList.map((researchItem, index) => {
             return (
                 <div key={index} className={index % 2 === 0 ? "bg-slate-800" : "bg-slate-700"}>
                     <div className="p-10">
-                        <MessageMarkdown content={research} />
+                        <MessageMarkdown content={researchItem} />
                     </div>
                 </div>
             );
