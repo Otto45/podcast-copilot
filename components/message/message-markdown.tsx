@@ -6,13 +6,13 @@ import { cn } from "@/utils/utils"
 
 interface MessageMarkdownProps {
   content: string,
-  copilotChatRole: 'user' | 'copilot'
+  copilotChatRole?: 'user' | 'copilot'
 }
 
 export const MessageMarkdown: FC<MessageMarkdownProps> = ({ content, copilotChatRole }) => {
   return (
     <MessageMarkdownMemoized
-      className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-full", copilotChatRole === 'user' ? "text-right" : "")}
+      className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-full", copilotChatRole && copilotChatRole === 'user' ? "text-right" : "")}
       remarkPlugins={[remarkGfm, remarkMath]}
       components={{
         p({ children }) {

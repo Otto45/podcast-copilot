@@ -13,6 +13,7 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
     const [transcript, setTranscript] = useState<string>('');
     const [currentUserQuestion, setCurrentUserQuestion] = useState<string | null>(null);
     const [copilotChatItems, setCopilotChatItems] = useState<Array<CopilotChatItem>>(new Array<CopilotChatItem>());
+    const [userIsPrompting, setUserIsPrompting] = useState<boolean>(false);
 
     return (
         <CopilotContext.Provider
@@ -27,7 +28,10 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
                 setCurrentUserQuestion,
 
                 copilotChatItems,
-                setCopilotChatItems
+                setCopilotChatItems,
+
+                userIsPrompting,
+                setUserIsPrompting
             }}
         >
             {children}

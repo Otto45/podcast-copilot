@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { CopilotContext } from '@/context/context';
 import { MessageMarkdown } from '../message/message-markdown';
 import { CopilotChatItem } from '@/types/types';
@@ -13,7 +13,9 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
     const {
         currentUserQuestion,
         copilotChatItems,
-        setCopilotChatItems
+        setCopilotChatItems,
+        userIsPrompting,
+        setUserIsPrompting
     } = useContext(CopilotContext);
 
     useEffect(() => {
@@ -32,8 +34,11 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
             if (researchTyped) {
                 const userQuestion: CopilotChatItem = { 'role': 'user', 'content': currentUserQuestion! };
                 const copilotAnswer: CopilotChatItem = { 'role': 'copilot', 'content': researchTyped };
+
                 setCopilotChatItems([...copilotChatItems, userQuestion, copilotAnswer]);
             }
+
+            setUserIsPrompting(false);
         };
 
         if (currentUserQuestion) {
@@ -42,22 +47,45 @@ export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
 
     }, [currentUserQuestion]);
 
+    useEffect(() => {
+
+    }, [userIsPrompting]);
+
     return (
-        copilotChatItems.map((copilotChatItem, index) => {
-            return (
-                <div key={index} className={index % 2 === 0 ? "bg-slate-800" : "bg-slate-700"}>
-                    {
-                        copilotChatItem.role === 'user' ?
-                            <div className="p-10">
-                                <MessageMarkdown content={copilotChatItem.content} copilotChatRole={copilotChatItem.role} />
-                            </div>
-                            :
-                            <div className="p-10">
-                                <MessageMarkdown content={copilotChatItem.content} copilotChatRole={copilotChatItem.role} />
-                            </div>
-                    }
-                </div>
-            );
-        })
+        <>
+            {
+                copilotChatItems.map((copilotChatItem, index) => {
+                    return (
+                        <div key={index} className={copilotChatItem.role === 'user' ? "bg-slate-800" : "bg-slate-700"}>
+                            {
+                                copilotChatItem.role === 'user' ?
+                                    <div className="p-10">
+                                        <MessageMarkdown content={copilotChatItem.content} copilotChatRole={copilotChatItem.role} />
+                                    </div>
+                                    :
+                                    <div className="p-10">
+                                        <MessageMarkdown content={copilotChatItem.content} copilotChatRole={copilotChatItem.role} />
+                                    </div>
+                            }
+                        </div>
+                    );
+                })
+            }
+            {
+                userIsPrompting &&
+                <>
+                    <div className="bg-slate-800">
+                        <div className="p-10">
+                            <MessageMarkdown content="" copilotChatRole="user" />
+                        </div>
+                    </div>
+                    <div className="bg-slate-700">
+                        <div className="p-10">
+                            <MessageMarkdown content="Hello! What can I look up for you?" copilotChatRole="copilot" />
+                        </div>
+                    </div>
+                </>
+            }
+        </>
     );
 };

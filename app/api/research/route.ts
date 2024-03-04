@@ -18,11 +18,12 @@ export async function POST(req: Request) {
     const userMessage = `${generateAnswersPrompt}\n\n${currentUserQuestion}`;
 
     const getAnswersMessage: any = [
+        { "role": "system", "content": generateAnswersPrompt },
         { "role": "user", "content": userMessage }
     ];
 
     const getAnswersResponse = await perplexityai.chat.completions.create({
-        model: 'pplx-7b-online',
+        model: 'sonar-medium-online',
         messages: getAnswersMessage
     });
 

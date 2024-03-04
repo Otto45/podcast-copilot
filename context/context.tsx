@@ -14,7 +14,8 @@ interface CopilotContext {
     copilotChatItems: Array<CopilotChatItem>,
     setCopilotChatItems: Dispatch<SetStateAction<Array<CopilotChatItem>>>,
 
-    
+    userIsPrompting: boolean,
+    setUserIsPrompting: Dispatch<SetStateAction<boolean>>
 }
 
 export const CopilotContext = createContext<CopilotContext>({
@@ -28,5 +29,8 @@ export const CopilotContext = createContext<CopilotContext>({
     setCurrentUserQuestion: () => { },
 
     copilotChatItems: new Array<CopilotChatItem>(),
-    setCopilotChatItems: () => { }
+    setCopilotChatItems: () => { },
+
+    userIsPrompting: false,
+    setUserIsPrompting: () => { }
 })

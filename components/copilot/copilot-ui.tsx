@@ -11,6 +11,8 @@ import { ScrollableCardContent } from '../ui/scrollable-card-content';
 import { CopilotChatItem } from '@/types/types';
 
 const TIME_SLICE = 450; // ms
+const COPILOT_PROMPT_PATTERN = /(Hey|hey|Hi|hi|Hello|hello),?\s*copilot[.,!?]?\s*/i;
+const NON_COPILOT_PROMPT_PATTERN = /^(?!.*(Hey|hey|Hi|hi|Hello|hello),?\s*copilot[.,!?]?\s*).*/;
 
 interface CopilotUiProps {
 
@@ -23,15 +25,15 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
         setIsRecording,
         setTranscript,
         setCurrentUserQuestion,
-        setCopilotChatItems
+        setCopilotChatItems,
+        setUserIsPrompting
     } = useContext(CopilotContext);
 
     const assemblyAiToken = useRef<string | null>(null);
     const rtTranscriberRef = useRef<RealtimeTranscriber | null>(null);
     const recorderRef = useRef<RecordRTC | null>(null);
     const transcriptRef = useRef<string>('');
-    const copilotPrompt = useRef<string | null>(null);
-    const silenceCountRef = useRef<number>(0);
+    const userIsPromptingRef = useRef<boolean>(false);
 
     useEffect(() => {
         const initCopilot = async () => {
@@ -70,57 +72,65 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
     };
 
     const createRealtimeTranscriber = () => {
-        const rt = new RealtimeTranscriber({ token: assemblyAiToken.current! });
+        const rt = new RealtimeTranscriber({
+            token: assemblyAiToken.current!,
+            endUtteranceSilenceThreshold: 700 // (Default)
+        });
 
         rt.on("open", ({ sessionId, expiresAt }) => console.log('Live transcription session id:', sessionId, 'Expires at:', expiresAt));
         rt.on("close", (code: number, reason: string) => console.log('Live transcription session closed:', code, reason));
         rt.on("error", (error: Error) => console.error('Live transcription error:', error));
-        
-        
+
+
         rt.on("transcript.partial", (partialTranscript: PartialTranscript) => {
-            if (partialTranscript.text.toLowerCase().includes('hey copilot')) {
-                copilotPrompt.current = partialTranscript.text;
-            }
-
-            if (partialTranscript.text.length === 0) {
-                silenceCountRef.current++;
-            } else {
-                silenceCountRef.current = 0;
-            }
-            
-            if ((silenceCountRef.current * TIME_SLICE >= 1000) && copilotPrompt.current !== null) {
-                let userSearchQuestion = copilotPrompt.current?.replace('hey copilot', '').trim();
-                userSearchQuestion = userSearchQuestion.charAt(0).toUpperCase() + userSearchQuestion.slice(1);
-                userSearchQuestion = userSearchQuestion.endsWith('?') ? userSearchQuestion : `${userSearchQuestion}?`;
-
-                setCurrentUserQuestion(userSearchQuestion);
-                copilotPrompt.current = null;
+            const userPromptedCopilot = COPILOT_PROMPT_PATTERN.test(partialTranscript.text);
+            if (userPromptedCopilot && !userIsPromptingRef.current) {
+                setUserIsPrompting(true);
+                userIsPromptingRef.current = true;
             }
         });
-        
+
         rt.on("transcript.final", (finalTranscript: FinalTranscript) => {
-            transcriptRef.current += ` ${finalTranscript.text}`;
-            setTranscript(transcriptRef.current);
+            console.log(finalTranscript.text);
+            // transcriptRef.current += ` ${finalTranscript.text}`;
+            // setTranscript(transcriptRef.current);
+
+            const userPromptedCopilot = COPILOT_PROMPT_PATTERN.test(finalTranscript.text);
+            if (userPromptedCopilot) {
+                const userPromptIndex = finalTranscript.text.search(COPILOT_PROMPT_PATTERN);
+                let userPrompt = finalTranscript.text.slice(userPromptIndex).trim();
+                userPrompt = userPrompt.replace(COPILOT_PROMPT_PATTERN, '').trim();
+                
+                if (userPrompt.length > 0) {
+                    setCurrentUserQuestion(userPrompt);
+                    userIsPromptingRef.current = false;
+                }
+            } else if (userIsPromptingRef.current) {
+                setCurrentUserQuestion(finalTranscript.text);
+                userIsPromptingRef.current = false;
+            }
         });
 
         rtTranscriberRef.current = rt;
     };
 
     const startRecording = async () => {
+        userIsPromptingRef.current = false;
         transcriptRef.current = '';
         setTranscript('');
+        setUserIsPrompting(false);
         setCurrentUserQuestion(null);
         setCopilotChatItems(new Array<CopilotChatItem>());
 
         createRealtimeTranscriber();
-        
+
         if (!recorderRef.current) {
             await createRecorder();
             recorderRef.current!.startRecording();
         } else {
             recorderRef.current!.resumeRecording();
         }
-        
+
         rtTranscriberRef.current!.connect();
 
         setIsRecording(true);
