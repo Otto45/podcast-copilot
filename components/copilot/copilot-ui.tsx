@@ -12,13 +12,8 @@ import { CopilotChatItem } from '@/types/types';
 
 const TIME_SLICE = 450; // ms
 const COPILOT_PROMPT_PATTERN = /(Hey|hey|Hi|hi|Hello|hello),?\s*copilot[.,!?]?\s*/i;
-const NON_COPILOT_PROMPT_PATTERN = /^(?!.*(Hey|hey|Hi|hi|Hello|hello),?\s*copilot[.,!?]?\s*).*/;
 
-interface CopilotUiProps {
-
-}
-
-export const CopilotUi: FC<CopilotUiProps> = () => {
+export const CopilotUi: FC = () => {
 
     const {
         isRecording,
@@ -92,9 +87,7 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
 
         rt.on("transcript.final", (finalTranscript: FinalTranscript) => {
             console.log(finalTranscript.text);
-            // transcriptRef.current += ` ${finalTranscript.text}`;
-            // setTranscript(transcriptRef.current);
-
+            
             const userPromptedCopilot = COPILOT_PROMPT_PATTERN.test(finalTranscript.text);
             if (userPromptedCopilot) {
                 const userPromptIndex = finalTranscript.text.search(COPILOT_PROMPT_PATTERN);
@@ -108,6 +101,9 @@ export const CopilotUi: FC<CopilotUiProps> = () => {
             } else if (userIsPromptingRef.current) {
                 setCurrentUserQuestion(finalTranscript.text);
                 userIsPromptingRef.current = false;
+            } else {
+                transcriptRef.current += ` ${finalTranscript.text}`;
+                setTranscript(transcriptRef.current);
             }
         });
 

@@ -5,13 +5,9 @@ import { CopilotContext } from '@/context/context';
 import { MessageMarkdown } from '../message/message-markdown';
 import { CopilotSuggestedQuestions } from '@/types/types';
 
-const generateQuestionSuggestionsInterval = 30000;
+const generateQuestionSuggestionsInterval = 30000; // ms
 
-interface CopilotSuggestionsProps {
-
-}
-
-export const CopilotSuggestions: FC<CopilotSuggestionsProps> = () => {
+export const CopilotSuggestions: FC = () => {
 
     const { transcript, setTranscript } = useContext(CopilotContext);
     const suggestionsRef = useRef<Array<string>>([]);

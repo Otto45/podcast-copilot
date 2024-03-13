@@ -1,15 +1,11 @@
 "use client"
 
-import React, { useContext, useEffect } from 'react';
+import React, { FC, useContext, useEffect } from 'react';
 import { CopilotContext } from '@/context/context';
 import { MessageMarkdown } from '../message/message-markdown';
 import { CopilotChatItem } from '@/types/types';
 
-interface CopilotResearchProps {
-
-}
-
-export const CopilotResearch: React.FC<CopilotResearchProps> = () => {
+export const CopilotResearch: FC = () => {
     const {
         currentUserQuestion,
         copilotChatItems,
