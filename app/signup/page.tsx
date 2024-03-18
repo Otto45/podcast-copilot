@@ -25,11 +25,14 @@ export default function Signup() {
             return;
         }
 
-        const origin = window.location.origin;
+        const url = process.env.NEXT_PUBLIC_VERCEL_URL ?? 'localhost:3000';
 
         const { error } = await supabase.auth.signUp({
             email,
-            password
+            password,
+            options: {
+                emailRedirectTo: `https://${url}`
+            }
         });
 
         if (error) {
