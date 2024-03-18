@@ -1,51 +1,56 @@
-"use client"
-
 import React from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/utils/supabase/server';
+import { SignUpWithPasswordCredentials } from '@supabase/supabase-js';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
-export default function Signup() {
-    const router = useRouter();
-    
-    const [signUpErrorMessage, setSignUpErrorMessage] = React.useState<string | null>(null);
+interface SignUpProps {
+    searchParams: { [key: string]: string | string[] | undefined }
+}
 
-    const signUp = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+export default function Signup({ searchParams }: SignUpProps) {
+    const signUp = async (formData: FormData) => {
+        'use server'
 
-        const email = event.currentTarget.email.value as string;
-        const password = event.currentTarget.password.value as string;
-        const confirmPassword = event.currentTarget.confirmPassword.value as string;
-        const supabase = createClient();
-
-        if (password !== confirmPassword) {
-            setSignUpErrorMessage('Passwords do not match');
-            return;
+        if (!formData.get('email')) {
+            redirect('/signup?signUpError=Email is required');
         }
 
-        const url = process.env.NEXT_PUBLIC_VERCEL_URL ?? 'localhost:3000';
+        if (!formData.get('password')) {
+            redirect('/signup?signUpError=Password is required');
+        }
 
-        const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                emailRedirectTo: `https://${url}`
-            }
-        });
+        if (!formData.get('confirmPassword')) {
+            redirect('/signup?signUpError=Confirm Password is required');
+        }
 
+        if (formData.get('password') !== formData.get('confirmPassword')) {
+            redirect('/signup?signUpError=Passwords do not match');
+        }
+
+        const supabase = createClient()
+
+        const credentials: SignUpWithPasswordCredentials = {
+          email: formData.get('email') as string,
+          password: formData.get('password') as string
+        }
+
+        const { error } = await supabase.auth.signUp(credentials)
+      
         if (error) {
-            setSignUpErrorMessage(error.message);
-            return;
+          redirect(`/signup?signUpError=${error.message}`)
         }
-
-        router.push('/');
+      
+        revalidatePath('/', 'layout')
+        redirect('/')
     };
 
     return (
         <div className="flex items-center h-full">
-            <form onSubmit={signUp}>
+            <form>
                 <div className="w-full max-w-md mx-auto space-y-8">
                     <div className="space-y-2">
                         <h1 className="text-3xl font-bold">Sign Up</h1>
@@ -54,18 +59,18 @@ export default function Signup() {
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" placeholder="name@example.com" type="email" autoComplete="email" required />
+                            <Input id="email" name="email" placeholder="name@example.com" type="email" autoComplete="email" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" autoComplete="new-password" required />
+                            <Input id="password" name="password" type="password" autoComplete="new-password" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="confirmPassword">Confirm Password</Label>
-                            <Input id="confirmPassword" type="password" autoComplete="new-password" required />
+                            <Input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" required />
                         </div>
-                        <Button type="submit" className="w-full">Sign Up</Button>
-                        {signUpErrorMessage && <p className="text-red-500">{signUpErrorMessage}</p>}
+                        <Button formAction={signUp} className="w-full">Sign Up</Button>
+                        {searchParams.signUpError && <p className="text-red-500">{searchParams.signUpError}</p>}
                     </div>
                 </div>
             </form>

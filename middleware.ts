@@ -7,13 +7,13 @@ export async function middleware(request: NextRequest) {
 
     // Refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/auth-helpers/nextjs#managing-session-with-middleware
-    const session = (await supabase.auth.getSession()).data.session;
+    const user = (await supabase.auth.getUser()).data.user;
     
     const pathName = request.nextUrl.pathname;
-    if (!session && pathName !== '/login' && pathName !== '/signup') {
+    if (!user && pathName !== '/login' && pathName !== '/signup') {
       return NextResponse.redirect(new URL('/login', request.url));
-    } else if (session && (pathName === '/login' || pathName === '/signup')) {
-      return NextResponse.redirect(new URL('/logout', request.url));
+    } else if (user && (pathName === '/login' || pathName === '/signup')) {
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     return response;
@@ -38,6 +38,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ]
 };
